@@ -9,7 +9,7 @@ from offlax.replay_buffer import ReplayBuffer
 def generate_offlax_dataset(
     env: gym.Env, agent: Callable, steps: int, path: str
 ) -> None:
-    """Generates an offlax dataset for the environment and agent 
+    """Generates an offlax dataset for the environment and agent
 
     Args:
         env (gym.Env): An Gym API compatible environment

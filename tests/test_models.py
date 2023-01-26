@@ -1,9 +1,10 @@
 from typing import Tuple
-from offlax.models import ActorDiscrete, ActorContinuous, Critic
 
 import jax
 from jax import numpy as jnp
 from omegaconf import OmegaConf
+
+from offlax.models import ActorContinuous, ActorDiscrete, Critic
 
 
 def test_actor_continuous():
@@ -21,8 +22,9 @@ def test_actor_continuous():
     assert isinstance(sigma, jnp.ndarray)
 
     config_dict = actor.get_config_dict()
-    assert config_dict['hidden_dim'] == 64
-    assert config_dict['output_dim'] == 64
+    assert config_dict["hidden_dim"] == 64
+    assert config_dict["output_dim"] == 64
+
 
 def test_actor_discrete():
     rng = jax.random.PRNGKey(0)
@@ -41,8 +43,9 @@ def test_actor_discrete():
     # assert isinstance(sigma, jnp.ndarray)
 
     config_dict = actor.get_config_dict()
-    assert config_dict['hidden_dim'] == 64
-    assert config_dict['output_dim'] == 64
+    assert config_dict["hidden_dim"] == 64
+    assert config_dict["output_dim"] == 64
+
 
 def test_critic():
     rng = jax.random.PRNGKey(0)
@@ -56,5 +59,5 @@ def test_critic():
     assert isinstance(action, jnp.ndarray)
 
     config_dict = critic.get_config_dict()
-    assert config_dict['hidden_dim'] == 64
-    assert config_dict['output_dim'] == 64
+    assert config_dict["hidden_dim"] == 64
+    assert config_dict["output_dim"] == 64
