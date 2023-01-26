@@ -108,7 +108,7 @@ class ActorDiscrete(Policy):
 
         if return_log_prob:
             log_action_probability = jnp.log(
-                jnp.asarray(action_probability == 0.0).astype("float") * 1e-8
+                jnp.asarray([action_probability == 0.0]).astype("float") * 1e-8
                 + action_probability
             )
             return action, action_probability, log_action_probability
