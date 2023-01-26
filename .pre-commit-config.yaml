@@ -1,0 +1,43 @@
+default_language_version:
+  # default language version for each language used in the repository
+  python: python3.8
+repos:
+  - repo: https://github.com/codespell-project/codespell
+    rev: v2.1.0
+    hooks:
+      - id: codespell
+        args:
+          - --skip="**/*.csv,**/*.json,**/*.html,**/*.js*,**/*.php.*,**/.map*,**/*.css*,**/*.min*,**/jquery*,**/*.asp,**/*.ipynb,docs/_build/html/_static/*,*.po,*.svg,docs/static/"
+          - --quiet-level=2
+          - --write-changes
+          - --ignore-words-list=ba,Sie,doesnot,te,strean
+        exclude_types: [csv, json]
+  - repo: https://github.com/psf/black
+    rev: 22.3.0
+    hooks:
+      - id: black
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.0.1
+    hooks:
+      # See https://pre-commit.com/hooks.html for more hooks
+      - id: check-ast
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: debug-statements
+      - id: trailing-whitespace
+      - id: pretty-format-json
+        args:
+          - --autofix
+      - id: requirements-txt-fixer
+      - id: check-json
+      - id: check-docstring-first
+      - id: check-toml
+  # - repo: local
+  #   hooks:
+  #     - id: pytest-check
+  #       name: pytest-check
+  #       entry: pytest
+  #       language: system
+  #       pass_filenames: false
+  #       always_run: false
+  #       types: [python]
