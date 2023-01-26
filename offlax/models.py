@@ -15,6 +15,8 @@ tfd = tfp.distributions
 
 
 class Policy(nn.Module):
+    """Generic implementation of a Policy class"""
+
     @abstractmethod
     def get_action(self, variables: VariableDict, state: jnp.ndarray, *args, **kwargs):
         raise NotImplementedError
@@ -29,6 +31,8 @@ class Policy(nn.Module):
 
 
 class ActorContinuous(Policy):
+    """Actor for a continuous action space"""
+
     hidden_dim: int
     output_dim: int
 
@@ -51,6 +55,18 @@ class ActorContinuous(Policy):
         deterministic: bool = False,
         return_log_prob: bool = True,
     ) -> jnp.ndarray:
+        """Returns action for a given state
+
+        Args:
+            variables (VariableDict): weights of the actor
+            state (jnp.ndarray): state of the environment
+            key (jax.random.PRNGKey): JAX random key
+            deterministic (bool, optional): flag when True, return a deterministic action. Defaults to False.
+            return_log_prob (bool, optional): flag when True, returns the probability and the log of the probability of the actor actions. Defaults to True.
+
+        Returns:
+            jnp.ndarray: _description_ #TODO: Update this
+        """
         mu, log_std = self.apply(variables, state)
 
         if deterministic:
@@ -79,6 +95,8 @@ class ActorContinuous(Policy):
 
 
 class ActorDiscrete(Policy):
+    """Actor for a continuous action space"""
+
     hidden_dim: int
     output_dim: int
 
@@ -98,6 +116,18 @@ class ActorDiscrete(Policy):
         deterministic: bool = False,
         return_log_prob: bool = True,
     ) -> Tuple[jnp.ndarray, jnp.ndarray]:
+        """Returns action for a given state
+
+        Args:
+            variables (VariableDict): weights of the actor
+            state (jnp.ndarray): state of the environment
+            key (jax.random.PRNGKey): JAX random key
+            deterministic (bool, optional): flag when True, return a deterministic action. Defaults to False.
+            return_log_prob (bool, optional): flag when True, returns the probability and the log of the probability of the actor actions. Defaults to True.
+
+        Returns:
+            Tuple[jnp.ndarray, jnp.ndarray]: _description_ #TODO: Update this
+        """
         action = self.apply(variables, state)
         categorical_distribution = tfd.Categorical(action)
 
@@ -124,6 +154,8 @@ class ActorDiscrete(Policy):
 
 
 class Critic(Policy):
+    """Critic for an Actor-Critic based algorithm"""
+
     hidden_dim: int
     output_dim: int
 

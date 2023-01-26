@@ -1,3 +1,5 @@
+"""Code for utility functions used in Offlax
+"""
 from typing import Callable
 
 import gym

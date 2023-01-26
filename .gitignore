@@ -1,2 +1,5 @@
 *.pyc
 *.parquet
+.pytest_cache/
+__pycache__/
+_build/
