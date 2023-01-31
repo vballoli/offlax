@@ -1,23 +1,25 @@
 import d4rl
 import gym
 import jax
+import warnings
+
+warnings.filterwarnings("ignore")
 from jax import numpy as jnp
+
 
 from offlax.cql import CQLDiscrete
 from offlax.models import ActorDiscrete, Critic
+from offlax.runner import OfflaxRunner
 
 
-def test_cql():
+def test_runner_search():
     rng = jax.random.PRNGKey(0)
     rng, init_rng = jax.random.split(rng)
 
     env = gym.make("maze2d-open-v0")
-
     actor = ActorDiscrete(64, env.action_space.shape[0])
 
-    critic = Critic(64, env.action_space.shape[0])
-
-    state = jnp.ones((10, env.observation_space.shape[0]))
+    critic = Critic(64, 1)
 
     cql = CQLDiscrete(
         rng,
@@ -29,13 +31,6 @@ def test_cql():
         0.1,
     )
 
-    action, probs, logs = cql.get_action(state, rng=rng, train=True)
+    runner = OfflaxRunner(cql, enable_wandb=False)
 
-    experience_batch = [
-        jnp.ones((128, env.observation_space.shape[0])),
-        jnp.ones((128, 1)),
-        jnp.ones((128, 1)),
-        jnp.ones((128, env.observation_space.shape[0])),
-        jnp.ones((128, 1)),
-    ]
-    cql.step(experience_batch)
+    runner.train()
