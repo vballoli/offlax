@@ -1,4 +1,4 @@
-offlax.cql
+﻿offlax.cql
 ==========
 
 .. automodule:: offlax.cql
@@ -8,6 +8,12 @@ offlax.cql
 
 
 
+
+   .. rubric:: Functions
+
+   .. autosummary::
+
+      sample
 
 
 

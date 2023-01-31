@@ -30,6 +30,7 @@
    offlax.cql
    offlax.models
    offlax.replay_buffer
+   offlax.runner
    offlax.sac
    offlax.utils
 

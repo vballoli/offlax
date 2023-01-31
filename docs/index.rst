@@ -10,6 +10,7 @@ Welcome to Offlax's documentation!
    :maxdepth: 3
    :caption: Contents:
 
+   design
    api
 
 
