@@ -7,7 +7,7 @@ from ray.air.integrations.wandb import WandbLoggerCallback
 __all__ = ["OfflaxRunner"]
 
 
-@ray.remote
+# @ray.remote
 class OfflaxRunner:
     """
     Generic runner that encapsulates search, training and inference.
