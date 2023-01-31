@@ -1,5 +1,6 @@
 from __future__ import annotations
 from copy import deepcopy
+from functools import partial
 from typing import List, Tuple, Dict
 
 import d4rl
@@ -59,6 +60,7 @@ class CQLDiscrete:
         self.actor_optimizer_variables = self.actor_optimizer.init(self.actor_variables)
 
         self.critic1 = critic
+        self.rng, _ = jax.random.split(self.rng)
         self.critic1_variables = self.critic1.init(rng, jnp.ones((1, state_dims)))
         self.critic1_optimizer = optax.adam(1e-3)
         self.critic1_optimizer_variables = self.critic1_optimizer.init(
@@ -69,6 +71,7 @@ class CQLDiscrete:
         self.critic_target1_variables = deepcopy(self.critic1_variables)
 
         self.critic2 = critic
+        self.rng, _ = jax.random.split(self.rng)
         self.critic2_variables = self.critic2.init(rng, jnp.ones((1, state_dims)))
         self.critic2_optimizer = optax.adam(1e-3)
         self.critic2_optimizer_variables = self.critic2_optimizer.init(
@@ -90,6 +93,7 @@ class CQLDiscrete:
         self.state_dims = state_dims
         self.action_dims = action_dims
 
+    @jax.jit
     def get_action(
         self, state: jnp.ndarray, train: bool = False, rng: jax.random.PRNGKey = None
     ) -> jnp.ndarray:
@@ -97,14 +101,16 @@ class CQLDiscrete:
 
         assert rng is not None
 
+        self.rng, key = jax.random.split(rng)
         action = self.actor.get_action(
-            self.actor_variables, state, deterministic=not train, key=rng
+            self.actor_variables, state, deterministic=not train, key=key
         )
 
         action = jax.lax.stop_gradient(action)
 
         return action
 
+    @partial(jax.jit, static_argnums=(0,))
     def get_actor_loss(
         self,
         states: jnp.ndarray,
@@ -112,8 +118,8 @@ class CQLDiscrete:
         critic1_variables,
         critic2_variables,
         alpha: float,
+        loss_key,
     ) -> Tuple[jnp.ndarray, jnp.ndarray]:
-        self.rng, loss_key = jax.random.split(self.rng)
         actions, action_probabilities, log_preds_actions = self.actor.get_action(
             actor_variables, states, loss_key, return_log_prob=True
         )
@@ -129,9 +135,11 @@ class CQLDiscrete:
 
         return actor_loss, log_action_sum
 
+    @partial(jax.jit, static_argnums=(0,))
     def get_alpha_loss(self, alpha: jnp.ndarray, log_preds: jnp.ndarray) -> jnp.ndarray:
         return -(alpha * jax.lax.stop_gradient(log_preds + self.target_entropy)).mean()
 
+    @partial(jax.jit, static_argnums=(0,))
     def get_critic_loss(
         self,
         states: jnp.ndarray,
@@ -140,8 +148,8 @@ class CQLDiscrete:
         dones: jnp.ndarray,
         critic1_variables,
         critic2_variables,
+        actor_key,
     ):
-        self.rng, actor_key = jax.random.split(self.rng)
         action, action_probs, log_prob_sum = self.actor.get_action(
             self.actor_variables,
             next_states,
@@ -187,11 +195,12 @@ class CQLDiscrete:
 
         return total_c1_loss, total_c2_loss
 
-    def step(self, experience_batch: List):
+    def step(self, experience_batch):
         states, _, rewards, next_states, dones = experience_batch
 
         # Calculate Actor loss and update actor variables
         alpha = deepcopy(self.alpha)
+        self.rng, key = jax.random.split(self.rng)
         (actor_loss, log_preds_actor), actor_gradients = jax.value_and_grad(
             self.get_actor_loss, has_aux=True, argnums=1
         )(
@@ -200,6 +209,7 @@ class CQLDiscrete:
             self.critic1_variables,
             self.critic2_variables,
             alpha,
+            key,
         )
         actor_updates, self.actor_optimizer_variables = self.actor_optimizer.update(
             actor_gradients, self.actor_optimizer_variables
@@ -216,6 +226,7 @@ class CQLDiscrete:
         self.alpha = optax.apply_updates(self.alpha, alpha_updates)
 
         # Update critics
+        self.rng, key = jax.random.split(self.rng)
         (total_c1_loss, total_c2_loss), (
             critic1_gradients,
             critic2_gradients,
@@ -226,6 +237,7 @@ class CQLDiscrete:
             dones,
             self.critic1_variables,
             self.critic2_variables,
+            key,
         )
 
         (
@@ -300,7 +312,8 @@ class CQLDiscrete:
         """
         return "min", "total_c1_loss"
 
-    def parse_config(self, config: Dict) -> CQLDiscrete:
+    @classmethod
+    def parse_config(cls, config: Dict) -> CQLDiscrete:
         return CQLDiscrete(
             jax.random.PRNGKey(config["seed"]),
             ActorDiscrete(config["actor/hidden_dim"], config["action_dims"]),
@@ -327,9 +340,9 @@ class CQLDiscrete:
         dataset = d4rl.qlearning_dataset(env)
 
         for iteration in tqdm(range(int(config["iterations"]))):
-            rng, _ = jax.random.split(self.rng)
+            self.rng, _ = jax.random.split(self.rng)
 
-            batch_sample = sample(dataset, rng, config["batch_size"])
+            batch_sample = sample(dataset, self.rng, config["batch_size"])
             total_c1_loss, total_c2_loss, alpha_loss, actor_loss = self.step(
                 [
                     batch_sample["observations"],
