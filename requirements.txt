@@ -1,4 +1,5 @@
+git+https://github.com/Farama-Foundation/d4rl@master#egg=d4rl
+flax
 jax
 jaxlib
-flax
 petastorm[opencv]
