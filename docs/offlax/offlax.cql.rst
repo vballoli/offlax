@@ -1,4 +1,4 @@
-﻿offlax.cql
+offlax.cql
 ==========
 
 .. automodule:: offlax.cql

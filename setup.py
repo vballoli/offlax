@@ -15,7 +15,7 @@ setup(
     packages=find_packages(),
     version="0.1.0",
     license="MIT",
-    description="NFNets, PyTorch",
+    description="Offline Reinforcement Learning in JAX",
     long_description=long_description,
     long_description_content_type="text/markdown",
     author="Vaibhav Balloli",

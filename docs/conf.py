@@ -14,6 +14,8 @@ release = "0.1.0"
 import os, sys
 
 sys.path.append(os.path.abspath("../"))
+sys.path.append(os.path.abspath("../../"))
+sys.path.append(os.path.abspath("../offlax"))
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration

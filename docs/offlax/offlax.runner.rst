@@ -1,4 +1,4 @@
-﻿offlax.runner
+offlax.runner
 =============
 
 .. automodule:: offlax.runner
