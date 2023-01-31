@@ -14,7 +14,6 @@ release = "0.1.0"
 import os, sys
 
 sys.path.append(os.path.abspath("../"))
-sys.path.append(os.path.abspath("../../"))
 sys.path.append(os.path.abspath("../offlax"))
 
 # -- General configuration ---------------------------------------------------
@@ -22,10 +21,10 @@ sys.path.append(os.path.abspath("../offlax"))
 
 extensions = [
     "sphinx.ext.viewcode",
+    "sphinx.ext.autosummary",
     "sphinx.ext.autodoc",
     "sphinx.ext.intersphinx",
     "sphinx.ext.doctest",
-    "sphinx.ext.autosummary",
     "sphinx.ext.todo",
     "sphinx.ext.coverage",
     "sphinx.ext.mathjax",
@@ -56,6 +55,22 @@ autodoc_default_options = {
     "show-inheritance": False,
 }
 autodoc_inherit_docstrings = True
+autodoc_mock_imports = [
+    "jax",
+    "d4rl",
+    "petastorm",
+    "ray",
+    "gym",
+    "numpy",
+    "np",
+    "wandb",
+    "flax",
+    "omegaconf",
+    "tensorflow_probability",
+    "optax",
+    "pyspark",
+]
+
 myst_enable_extensions = ["colon_fence"]
 
 nb_execution_mode = "off"
