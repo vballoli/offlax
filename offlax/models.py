@@ -3,13 +3,12 @@ from copy import deepcopy
 from typing import List, Tuple, Union
 
 import jax
-import numpy as np
-import optax
 from flax import linen as nn
 from flax.core.scope import VariableDict
 from jax import numpy as jnp
 from omegaconf import OmegaConf
 from tensorflow_probability.substrates import jax as tfp
+from ray import tune
 
 tfd = tfp.distributions
 
@@ -86,11 +85,21 @@ class ActorContinuous(Policy):
 
         return action
 
-    def get_config_dict(self) -> OmegaConf:
+    def get_config_dict(self, name: str = "") -> OmegaConf:
         config = OmegaConf.create({})
-        config["hidden_dim"] = self.hidden_dim
-        config["output_dim"] = self.output_dim
+        if name != "":
+            name += "/"
+        config[f"{name}hidden_dim"] = self.hidden_dim
+        config[f"{name}output_dim"] = self.output_dim
 
+        if name == "":
+            return config
+        return {name: config}
+
+    def get_search_space(self, prefix: str = ""):
+        if prefix != "":
+            prefix += "/"
+        config = {f"{prefix}hidden_dim": tune.grid_search([32, 64, 128, 256])}
         return config
 
 
@@ -128,28 +137,38 @@ class ActorDiscrete(Policy):
         Returns:
             Tuple[jnp.ndarray, jnp.ndarray]: _description_ #TODO: Update this
         """
-        action = self.apply(variables, state)
-        categorical_distribution = tfd.Categorical(action)
+        action_probability = self.apply(variables, state)
+        categorical_distribution = tfd.Categorical(action_probability)
 
-        action_probability = categorical_distribution.sample(seed=key)
+        action = categorical_distribution.sample(seed=key)
 
         if deterministic:
-            return action_probability
+            return action
 
         if return_log_prob:
             log_action_probability = jnp.log(
-                jnp.asarray([action_probability == 0.0]).astype("float") * 1e-8
+                jnp.asarray(action_probability == 0.0).astype("float") * 1e-8
                 + action_probability
             )
             return action, action_probability, log_action_probability
 
         return action_probability
 
-    def get_config_dict(self) -> OmegaConf:
+    def get_config_dict(self, name: str = "") -> OmegaConf:
         config = OmegaConf.create({})
-        config["hidden_dim"] = self.hidden_dim
-        config["output_dim"] = self.output_dim
+        if name != "":
+            name += "/"
+        config[f"{name}hidden_dim"] = self.hidden_dim
+        config[f"{name}output_dim"] = self.output_dim
 
+        if name == "":
+            return config
+        return {name: config}
+
+    def get_search_space(self, prefix: str = ""):
+        if prefix != "":
+            prefix += "/"
+        config = {f"{prefix}hidden_dim": tune.grid_search([32, 64, 128, 256])}
         return config
 
 
@@ -168,9 +187,19 @@ class Critic(Policy):
     def get_action(self, variables: VariableDict, state: jnp.ndarray) -> jnp.ndarray:
         return self.apply(variables, state)
 
-    def get_config_dict(self) -> OmegaConf:
+    def get_config_dict(self, name: str = "") -> OmegaConf:
         config = OmegaConf.create({})
-        config["hidden_dim"] = self.hidden_dim
-        config["output_dim"] = self.output_dim
+        if name != "":
+            name += "/"
+        config[f"{name}hidden_dim"] = self.hidden_dim
+        config[f"{name}output_dim"] = self.output_dim
 
+        if name == "":
+            return config
+        return {name: config}
+
+    def get_search_space(self, prefix: str = ""):
+        if prefix != "":
+            prefix += "/"
+        config = {f"{prefix}hidden_dim": tune.grid_search([32, 64, 128, 256])}
         return config
